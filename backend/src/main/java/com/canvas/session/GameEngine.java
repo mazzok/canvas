@@ -77,7 +77,7 @@ public class GameEngine {
             char c = word.charAt(i);
             if (c == ' ') {
                 result[i] = " ";
-            } else if (i == 0 || (revealCount > 0 && i == revealCount)) {
+            } else if (i == 0 || i <= revealCount) {
                 result[i] = String.valueOf(c);
             } else {
                 result[i] = "_";

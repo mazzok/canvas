@@ -91,9 +91,9 @@ class GameEngineTest {
         assertEquals("S", hint[0]);
         assertEquals("_", hint[1]);
 
-        String[] hint2 = gameEngine.buildHint("Schmetterling", 2); // reveal 3rd letter too
+        String[] hint2 = gameEngine.buildHint("Schmetterling", 2); // reveal up to 3rd letter (cumulative)
         assertEquals("S", hint2[0]);
-        assertEquals("_", hint2[1]);
-        assertEquals("h", hint2[2]);
+        assertEquals("c", hint2[1]); // 2nd letter still visible
+        assertEquals("h", hint2[2]); // 3rd letter now revealed
     }
 }
