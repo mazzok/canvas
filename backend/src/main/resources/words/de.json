@@ -1,0 +1,38 @@
+[
+  {
+    "category": "tiere",
+    "language": "de",
+    "words": ["Schmetterling", "Elefant", "Igel", "Frosch", "Eichhörnchen",
+              "Marienkäfer", "Pinguin", "Giraffe", "Hase", "Ente",
+              "Schildkröte", "Papagei", "Löwe", "Zebra", "Biene",
+              "Katze", "Hund", "Fisch", "Vogel", "Schnecke"]
+  },
+  {
+    "category": "pflanzen",
+    "language": "de",
+    "words": ["Sonnenblume", "Tulpe", "Kaktus", "Baum", "Pilz",
+              "Rose", "Gras", "Blatt", "Wurzel", "Beere",
+              "Apfelbaum", "Tanne", "Bambus", "Efeu", "Moos"]
+  },
+  {
+    "category": "natur",
+    "language": "de",
+    "words": ["Regenbogen", "Wolke", "Blitz", "Schnee", "Regen",
+              "Berg", "Fluss", "See", "Mond", "Sonne",
+              "Stern", "Vulkan", "Wasserfall", "Welle", "Eis"]
+  },
+  {
+    "category": "maerchen",
+    "language": "de",
+    "words": ["Drache", "Prinzessin", "Zauberstab", "Schloss", "Fee",
+              "Riese", "Zwerg", "Hexe", "Einhorn", "Meerjungfrau",
+              "Zauberhut", "Fliegendes Pferd", "Zaubertrank", "Schatztruhe", "Kristallkugel"]
+  },
+  {
+    "category": "garten",
+    "language": "de",
+    "words": ["Schaukel", "Gießkanne", "Schaufel", "Vogelhaus", "Regenwurm",
+              "Kompost", "Zaun", "Gartenhaus", "Blumenbeet", "Rasen",
+              "Schubkarre", "Rechen", "Gewächshaus", "Teich", "Hecke"]
+  }
+]

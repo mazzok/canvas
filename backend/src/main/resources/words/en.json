@@ -1,0 +1,38 @@
+[
+  {
+    "category": "tiere",
+    "language": "en",
+    "words": ["butterfly", "elephant", "hedgehog", "frog", "squirrel",
+              "ladybug", "penguin", "giraffe", "rabbit", "duck",
+              "turtle", "parrot", "lion", "zebra", "bee",
+              "cat", "dog", "fish", "bird", "snail"]
+  },
+  {
+    "category": "pflanzen",
+    "language": "en",
+    "words": ["sunflower", "tulip", "cactus", "tree", "mushroom",
+              "rose", "grass", "leaf", "root", "berry",
+              "apple tree", "fir tree", "bamboo", "ivy", "moss"]
+  },
+  {
+    "category": "natur",
+    "language": "en",
+    "words": ["rainbow", "cloud", "lightning", "snow", "rain",
+              "mountain", "river", "lake", "moon", "sun",
+              "star", "volcano", "waterfall", "wave", "ice"]
+  },
+  {
+    "category": "maerchen",
+    "language": "en",
+    "words": ["dragon", "princess", "magic wand", "castle", "fairy",
+              "giant", "dwarf", "witch", "unicorn", "mermaid",
+              "wizard hat", "flying horse", "magic potion", "treasure chest", "crystal ball"]
+  },
+  {
+    "category": "garten",
+    "language": "en",
+    "words": ["swing", "watering can", "shovel", "birdhouse", "earthworm",
+              "compost", "fence", "garden shed", "flower bed", "lawn",
+              "wheelbarrow", "rake", "greenhouse", "pond", "hedge"]
+  }
+]
