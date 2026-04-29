@@ -1,0 +1,45 @@
+{
+  "home": {
+    "title": "Zeichen-Spiel",
+    "newSession": "Neue Session starten",
+    "joinSession": "Session beitreten",
+    "sessionId": "Session-Code"
+  },
+  "nickname": {
+    "title": "Wie heißt du?",
+    "placeholder": "Dein Name",
+    "join": "Beitreten"
+  },
+  "lobby": {
+    "title": "Warteraum",
+    "players": "Spieler",
+    "scanQr": "QR-Code scannen oder Link teilen:",
+    "startGame": "Spiel starten",
+    "waitingForHost": "Warte auf den Host..."
+  },
+  "drawing": {
+    "yourTurn": "Du zeichnest",
+    "draw": "Zeichne:",
+    "done": "Fertig zeichnen",
+    "otherDrawing": "zeichnet"
+  },
+  "guessing": {
+    "guess": "Was wurde gezeichnet?",
+    "placeholder": "Deine Antwort...",
+    "send": "Absenden"
+  },
+  "result": {
+    "correct": "hat es erraten!",
+    "timeout": "Zeit abgelaufen!",
+    "theWord": "Das Wort war:",
+    "scores": "Punktestand",
+    "nextRound": "Nächste Runde",
+    "endSession": "Session beenden"
+  },
+  "common": {
+    "seconds": "Sekunden",
+    "points": "Punkte",
+    "host": "Host",
+    "you": "Du"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "home": {
+    "title": "Drawing Game",
+    "newSession": "Start New Session",
+    "joinSession": "Join Session",
+    "sessionId": "Session Code"
+  },
+  "nickname": {
+    "title": "What's your name?",
+    "placeholder": "Your name",
+    "join": "Join"
+  },
+  "lobby": {
+    "title": "Waiting Room",
+    "players": "Players",
+    "scanQr": "Scan QR code or share link:",
+    "startGame": "Start Game",
+    "waitingForHost": "Waiting for host..."
+  },
+  "drawing": {
+    "yourTurn": "Your turn to draw",
+    "draw": "Draw:",
+    "done": "Done drawing",
+    "otherDrawing": "is drawing"
+  },
+  "guessing": {
+    "guess": "What was drawn?",
+    "placeholder": "Your answer...",
+    "send": "Send"
+  },
+  "result": {
+    "correct": "guessed it!",
+    "timeout": "Time's up!",
+    "theWord": "The word was:",
+    "scores": "Scoreboard",
+    "nextRound": "Next Round",
+    "endSession": "End Session"
+  },
+  "common": {
+    "seconds": "seconds",
+    "points": "points",
+    "host": "Host",
+    "you": "You"
+  }
+}
