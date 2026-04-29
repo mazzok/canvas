@@ -1,0 +1,11 @@
+package com.canvas.websocket;
+
+public enum MessageType {
+    // Client → Server
+    JOIN, START_GAME, SELECT_CATEGORY, STROKE, DRAWING_DONE, GUESS,
+
+    // Server → Client
+    GAME_STATE, PLAYER_JOINED, PLAYER_DISCONNECTED,
+    CATEGORY_OPTIONS, ROUND_STARTED, WORD_SECRET,
+    COUNTDOWN, HINT, CORRECT_GUESS, ROUND_ENDED, TIMER_TICK, ERROR
+}
