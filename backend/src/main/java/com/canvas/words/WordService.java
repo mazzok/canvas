@@ -9,21 +9,19 @@ import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @ApplicationScoped
 public class WordService {
 
     @Inject WordRepository wordRepository;
-
-    private final Random random = new Random();
-    private final ObjectMapper mapper = new ObjectMapper();
+    @Inject ObjectMapper mapper;
 
     void onStart(@Observes StartupEvent ev) {
         seedIfEmpty();
     }
 
-    public void seedIfEmpty() {
+    void seedIfEmpty() {
         if (wordRepository.count() > 0) return;
         for (String lang : List.of("de", "en")) {
             try (InputStream is = getClass().getResourceAsStream("/words/" + lang + ".json")) {
@@ -40,7 +38,7 @@ public class WordService {
             .findByCategoryAndLanguage(category, language.name().toLowerCase())
             .map(doc -> {
                 if (doc.words == null || doc.words.isEmpty()) return null;
-                return doc.words.get(random.nextInt(doc.words.size()));
+                return doc.words.get(ThreadLocalRandom.current().nextInt(doc.words.size()));
             })
             .orElse(null);
     }
