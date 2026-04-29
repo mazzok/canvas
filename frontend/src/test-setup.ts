@@ -16,4 +16,4 @@ HTMLCanvasElement.prototype.getContext = function () {
     strokeStyle: '',
     lineWidth: 0,
   } as unknown as CanvasRenderingContext2D
-} as typeof HTMLCanvasElement.prototype.getContext
+} as unknown as typeof HTMLCanvasElement.prototype.getContext
