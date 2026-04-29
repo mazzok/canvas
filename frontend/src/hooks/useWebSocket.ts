@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { WsMessage } from '../types'
+import type { WsMessage } from '../types'
 
 export function useWebSocket(
   sessionId: string,

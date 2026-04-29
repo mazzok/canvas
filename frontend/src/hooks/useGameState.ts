@@ -1,5 +1,5 @@
 import { useReducer, useCallback } from 'react'
-import { GameState, WsMessage, StrokeEvent, Player } from '../types'
+import type { GameState, WsMessage, StrokeEvent, Player } from '../types'
 
 const initial: GameState = {
   sessionId: '',

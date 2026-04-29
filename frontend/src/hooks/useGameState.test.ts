@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { useGameState } from './useGameState'
-import { WsMessage } from '../types'
+import type { WsMessage } from '../types'
 
 function applyMessage(result: ReturnType<typeof useGameState>, msg: WsMessage) {
   act(() => result.dispatch(msg))
