@@ -15,12 +15,17 @@ public class SessionManager {
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
 
     public Session createSession(DisplayMode displayMode, Language language, String hostNickname) {
-        String id = generateId();
-        Session session = new Session(id, null, displayMode, language);
-        sessions.put(id, session);
-        Player host = addPlayer(id, hostNickname, null);
-        host.isHost = true;
-        session.hostId = host.id;
+        // Build the host player and session fully before publishing to the map
+        String hostPlayerId = UUID.randomUUID().toString();
+        Player host = new Player(hostPlayerId, hostNickname, true);
+
+        Session session;
+        do {
+            String id = randomId();
+            session = new Session(id, hostPlayerId, displayMode, language);
+            session.players.put(hostPlayerId, host);
+        } while (sessions.putIfAbsent(session.id, session) != null); // atomic: retry on ID collision
+
         return session;
     }
 
@@ -56,13 +61,9 @@ public class SessionManager {
         sessions.clear();
     }
 
-    private String generateId() {
-        String id;
-        do {
-            StringBuilder sb = new StringBuilder(6);
-            for (int i = 0; i < 6; i++) sb.append(CHARS.charAt(rng.nextInt(CHARS.length())));
-            id = sb.toString();
-        } while (sessions.containsKey(id));
-        return id;
+    private String randomId() {
+        StringBuilder sb = new StringBuilder(6);
+        for (int i = 0; i < 6; i++) sb.append(CHARS.charAt(rng.nextInt(CHARS.length())));
+        return sb.toString();
     }
 }
