@@ -1,0 +1,10 @@
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY target/quarkus-app/lib/ /app/lib/
+COPY target/quarkus-app/*.jar /app/
+COPY target/quarkus-app/app/ /app/app/
+COPY target/quarkus-app/quarkus/ /app/quarkus/
+# React build is placed here by the frontend build step (see frontend plan)
+COPY target/classes/META-INF/resources/ /app/META-INF/resources/
+EXPOSE 8080
+CMD ["java", "-jar", "/app/quarkus-run.jar"]
