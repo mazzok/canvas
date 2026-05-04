@@ -1,5 +1,6 @@
 package com.canvas.model;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,6 +14,8 @@ public class Session {
     // ConcurrentHashMap for thread-safe individual ops; compound read-modify-write must use synchronized(session)
     public Map<String, Player> players = new ConcurrentHashMap<>();
     public Round currentRound; // null between rounds
+    // category name → list of player IDs who voted for it
+    public Map<String, List<String>> categoryVotes = new ConcurrentHashMap<>();
 
     public Session() {}
 
