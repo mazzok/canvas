@@ -167,7 +167,7 @@ public class GameWebSocket {
                 .add(playerId);
 
             boolean isFirstVote = activeTimers.get(gameSession.id + "-category") == null;
-            broadcastCategoryVotes(gameSession, isFirstVote);
+            broadcastCategoryVotes(gameSession, isFirstVote, 10);
 
             if (isFirstVote) {
                 startCategoryCountdown(gameSession);
@@ -175,16 +175,10 @@ public class GameWebSocket {
         }
     }
 
-    private void broadcastCategoryVotes(com.canvas.model.Session gameSession, boolean countdownStarted) {
-        String key = gameSession.id + "-category";
-        ScheduledFuture<?> timer = activeTimers.get(key);
-        long secondsLeft = countdownStarted && timer != null
-            ? Math.max(0, timer.getDelay(TimeUnit.SECONDS))
-            : 10;
-
+    private void broadcastCategoryVotes(com.canvas.model.Session gameSession, boolean countdownStarted, long secondsLeft) {
         broadcast(gameSession, WsMessage.of(MessageType.CATEGORY_VOTES, Map.of(
             "votes", new HashMap<>(gameSession.categoryVotes),
-            "countdownStarted", countdownStarted || activeTimers.containsKey(key),
+            "countdownStarted", countdownStarted || activeTimers.containsKey(gameSession.id + "-category"),
             "secondsLeft", secondsLeft
         )));
     }
@@ -197,27 +191,27 @@ public class GameWebSocket {
 
         ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(() -> {
             secondsLeft[0]--;
-            broadcastCategoryVotes(gameSession, true);
+            broadcastCategoryVotes(gameSession, true, secondsLeft[0]);
 
             if (secondsLeft[0] <= 0) {
                 cancelTimer(key);
-                String winner = gameEngine.resolveCategory(gameSession.categoryVotes, CATEGORIES);
-                // Clear votes for next round
-                gameSession.categoryVotes.clear();
-                // Start the round with the winning category
-                String drawerId = gameEngine.startRound(gameSession, winner);
-                Player drawer = gameSession.players.get(drawerId);
-                broadcast(gameSession, WsMessage.of(MessageType.ROUND_STARTED, Map.of(
-                    "drawerId", drawerId,
-                    "drawerNickname", drawer.nickname,
-                    "category", winner,
-                    "wordLength", gameSession.currentRound.word.length(),
-                    "firstLetter", String.valueOf(gameSession.currentRound.word.charAt(0))
-                )));
-                getWsForPlayer(gameSession, drawerId).ifPresent(drawerWs ->
-                    sendTo(drawerWs, WsMessage.of(MessageType.WORD_SECRET,
-                        Map.of("word", gameSession.currentRound.word))));
-                startDrawingTimer(gameSession);
+                synchronized (gameSession) {
+                    String winner = gameEngine.resolveCategory(gameSession.categoryVotes, CATEGORIES);
+                    gameSession.categoryVotes.clear();
+                    String drawerId = gameEngine.startRound(gameSession, winner);
+                    Player drawer = gameSession.players.get(drawerId);
+                    broadcast(gameSession, WsMessage.of(MessageType.ROUND_STARTED, Map.of(
+                        "drawerId", drawerId,
+                        "drawerNickname", drawer.nickname,
+                        "category", winner,
+                        "wordLength", gameSession.currentRound.word.length(),
+                        "firstLetter", String.valueOf(gameSession.currentRound.word.charAt(0))
+                    )));
+                    getWsForPlayer(gameSession, drawerId).ifPresent(drawerWs ->
+                        sendTo(drawerWs, WsMessage.of(MessageType.WORD_SECRET,
+                            Map.of("word", gameSession.currentRound.word))));
+                    startDrawingTimer(gameSession);
+                }
             }
         }, 1, 1, TimeUnit.SECONDS);
         activeTimers.put(key, future);
