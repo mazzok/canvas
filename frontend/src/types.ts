@@ -49,7 +49,6 @@ export interface GameState {
   categoryOptions?: string[]
   categoryVotes?: Record<string, string[]>   // category → player IDs
   categoryCountdownLeft?: number             // undefined = countdown not started
-  myVote?: string                            // this player's current vote (tracked client-side)
 }
 
 export type MessageType =

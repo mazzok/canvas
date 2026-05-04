@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useTranslation } from 'react-i18next'
 import type { GameState, WsMessage } from '../types'
@@ -20,7 +21,17 @@ export default function Lobby({ state, send }: Props) {
   const { t } = useTranslation()
   const joinUrl = state.joinUrl ?? `${window.location.origin}/join/${state.sessionId}`
 
+  const [optimisticVote, setOptimisticVote] = useState<string | undefined>(undefined)
+
+  const votes = state.categoryVotes ?? {}
+
+  useEffect(() => {
+    const myServerVote = Object.entries(votes).find(([, ids]) => ids.includes(state.playerId))?.[0]
+    if (myServerVote) setOptimisticVote(undefined)
+  }, [votes, state.playerId])
+
   const voteCategory = (cat: string) => {
+    setOptimisticVote(cat)
     send({ type: 'VOTE_CATEGORY', payload: { category: cat } })
   }
 
@@ -30,7 +41,6 @@ export default function Lobby({ state, send }: Props) {
   const playerMap = Object.fromEntries(state.players.map(p => [p.id, p]))
 
   const categories = state.categoryOptions ?? ['tiere', 'pflanzen', 'natur', 'maerchen', 'garten']
-  const votes = state.categoryVotes ?? {}
   const countdown = state.categoryCountdownLeft
   const countdownStarted = countdown !== undefined
 
@@ -57,12 +67,13 @@ export default function Lobby({ state, send }: Props) {
           <div className={styles.categoryGrid}>
             {categories.map(cat => {
               const voters = votes[cat] ?? []
-              const isMine = voters.includes(state.playerId)
+              const isMine = voters.includes(state.playerId) || optimisticVote === cat
               return (
                 <button
                   key={cat}
                   className={`${styles.categoryBtn} ${isMine ? styles.categoryBtnSelected : ''}`}
                   onClick={() => voteCategory(cat)}
+                  aria-pressed={isMine}
                 >
                   <div className={styles.categoryEmoji}>{CATEGORY_EMOJI[cat] ?? '🎯'}</div>
                   <div className={styles.categoryName}>{cat}</div>
@@ -121,7 +132,7 @@ export default function Lobby({ state, send }: Props) {
           {state.isHost && (
             <div className={styles.qrSection}>
               <QRCodeSVG value={joinUrl} size={160} />
-              <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 8 }}>{joinUrl}</p>
+              <p className={styles.joinUrl}>{joinUrl}</p>
               <button className={styles.startBtn} onClick={startGame}>
                 {t('lobby.startGame', 'Spiel starten')}
               </button>

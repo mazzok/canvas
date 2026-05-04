@@ -28,7 +28,6 @@ function reducer(state: GameState, msg: WsMessage): GameState {
         joinUrl: p.joinUrl as string | undefined,
         categoryVotes: undefined,
         categoryCountdownLeft: undefined,
-        myVote: undefined,
         categoryOptions: undefined,
       }
     case 'PLAYER_JOINED':
@@ -63,7 +62,6 @@ function reducer(state: GameState, msg: WsMessage): GameState {
         revealedLetters: undefined,
         categoryVotes: undefined,
         categoryCountdownLeft: undefined,
-        myVote: undefined,
         categoryOptions: undefined,
       }
     case 'WORD_SECRET':
