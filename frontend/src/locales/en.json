@@ -28,8 +28,7 @@
     "chooseCategory": "Choose a category",
     "canChange": "You can still change your choice",
     "choosing": "choosing…",
-    "waitHost": "Waiting for host…",
-    "startGame": "Start Game"
+    "waitHost": "Waiting for host…"
   },
   "drawing": {
     "yourTurn": "Your turn to draw",

@@ -28,8 +28,7 @@
     "chooseCategory": "Kategorie wählen",
     "canChange": "Du kannst deine Wahl noch ändern",
     "choosing": "wählt…",
-    "waitHost": "Warte auf den Host…",
-    "startGame": "Spiel starten"
+    "waitHost": "Warte auf den Host…"
   },
   "drawing": {
     "yourTurn": "Du zeichnest",
