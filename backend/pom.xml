@@ -107,7 +107,8 @@
         <version>1.15.0</version>
         <configuration>
           <workingDirectory>../frontend</workingDirectory>
-          <nodeVersion>v20.11.0</nodeVersion>
+          <nodeVersion>v20.19.0</nodeVersion>
+          <skip>${skipFrontend}</skip>
         </configuration>
         <executions>
           <execution>

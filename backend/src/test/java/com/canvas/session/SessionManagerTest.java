@@ -67,4 +67,18 @@ class SessionManagerTest {
         assertTrue(reconnected.connected);
         assertEquals(2, session.players.size()); // no duplicate
     }
+
+    @Test
+    void listSessions_empty() {
+        sessionManager.clearAll();
+        assertTrue(sessionManager.listSessions().isEmpty());
+    }
+
+    @Test
+    void listSessions_returnsAllSessions() {
+        sessionManager.clearAll();
+        sessionManager.createSession(DisplayMode.OWN_DEVICE, Language.DE, "Alice");
+        sessionManager.createSession(DisplayMode.OWN_DEVICE, Language.DE, "Bob");
+        assertEquals(2, sessionManager.listSessions().size());
+    }
 }

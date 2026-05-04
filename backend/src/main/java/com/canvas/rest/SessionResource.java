@@ -6,6 +6,7 @@ import com.canvas.model.Session;
 import com.canvas.session.SessionManager;
 import jakarta.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -62,7 +63,7 @@ public class SessionResource {
                     .map(p -> p.nickname).orElse("?");
                 return new SessionSummary(s.id, hostNickname, s.players.size(), s.phase.name());
             })
-            .collect(java.util.stream.Collectors.toList());
+            .collect(Collectors.toList());
         return Response.ok(result).build();
     }
 }
