@@ -156,7 +156,7 @@ public class GameWebSocket {
         if (playerId == null) return;
 
         String category = (String) payload.get("category");
-        if (category == null) return;
+        if (category == null || !CATEGORIES.contains(category)) return;
 
         synchronized (gameSession) {
             // Remove this player from any previous vote
@@ -194,8 +194,8 @@ public class GameWebSocket {
             broadcastCategoryVotes(gameSession, true, secondsLeft[0]);
 
             if (secondsLeft[0] <= 0) {
-                cancelTimer(key);
                 synchronized (gameSession) {
+                    cancelTimer(key);
                     String winner = gameEngine.resolveCategory(gameSession.categoryVotes, CATEGORIES);
                     gameSession.categoryVotes.clear();
                     String drawerId = gameEngine.startRound(gameSession, winner);
@@ -218,6 +218,9 @@ public class GameWebSocket {
     }
 
     private void handleSelectCategory(Session ws, com.canvas.model.Session gameSession, Map<String, Object> payload) {
+        if (gameSession == null || gameSession.phase != GamePhase.CATEGORY) {
+            sendTo(ws, WsMessage.error("Not in CATEGORY phase")); return;
+        }
         String playerId = wsToPlayerId.get(ws);
         if (!isHost(gameSession, playerId)) { sendTo(ws, WsMessage.error("Only host can select category")); return; }
 

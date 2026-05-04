@@ -85,7 +85,7 @@ export default function Lobby({ state, send }: Props) {
                           key={vid}
                           className={`${styles.chip} ${vid === state.playerId ? styles.chipSelf : ''}`}
                         >
-                          {vid === state.playerId ? 'Du' : (playerMap[vid]?.nickname ?? vid.slice(0, 6))}
+                          {vid === state.playerId ? t('common.you', 'Du') : (playerMap[vid]?.nickname ?? vid.slice(0, 6))}
                         </span>
                       ))}
                     </div>
@@ -113,7 +113,7 @@ export default function Lobby({ state, send }: Props) {
               className={`${styles.playerRow} ${p.id === state.playerId ? styles.playerRowSelf : ''}`}
             >
               <span className={styles.playerName}>
-                {p.id === state.playerId ? `${p.nickname} (Du)` : p.nickname}
+                {p.id === state.playerId ? `${p.nickname} (${t('common.you', 'Du')})` : p.nickname}
                 {p.isHost && ' 👑'}
               </span>
               {state.phase === 'CATEGORY' && (

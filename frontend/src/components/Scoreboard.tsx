@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { Player } from '../types'
 import styles from './Scoreboard.module.css'
 
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export default function Scoreboard({ players, currentPlayerId }: Props) {
+  const { t } = useTranslation()
   const sorted = [...players].sort((a, b) => b.score - a.score)
   return (
     <div className={styles.board}>
@@ -18,9 +20,9 @@ export default function Scoreboard({ players, currentPlayerId }: Props) {
           <span className={styles.name}>
             {p.nickname}
             {p.isHost && ' 👑'}
-            {p.id === currentPlayerId && ' (Du)'}
+            {p.id === currentPlayerId && ` (${t('common.you', 'Du')})`}
           </span>
-          <span className={styles.score}>{p.score} Pkt</span>
+          <span className={styles.score}>{p.score} {t('common.points', 'Pkt')}</span>
         </div>
       ))}
     </div>

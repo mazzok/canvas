@@ -8,6 +8,8 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import java.util.List;
+import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
@@ -95,5 +97,21 @@ class GameEngineTest {
         assertEquals("S", hint2[0]);
         assertEquals("c", hint2[1]); // 2nd letter still visible
         assertEquals("h", hint2[2]); // 3rd letter now revealed
+    }
+
+    @Test
+    void resolveCategory_emptyVotes_returnsFromAllCategories() {
+        List<String> all = List.of("tiere", "pflanzen", "natur");
+        String result = gameEngine.resolveCategory(new java.util.HashMap<>(), all);
+        assertTrue(all.contains(result));
+    }
+
+    @Test
+    void resolveCategory_singleWinner_returnsThatCategory() {
+        Map<String, List<String>> votes = new java.util.HashMap<>();
+        votes.put("tiere", List.of("p1", "p2"));
+        votes.put("pflanzen", List.of("p3"));
+        String result = gameEngine.resolveCategory(votes, List.of("tiere", "pflanzen"));
+        assertEquals("tiere", result);
     }
 }
