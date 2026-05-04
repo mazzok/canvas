@@ -1,29 +1,49 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
-import type { DisplayMode, Language } from '../types'
+import styles from './Home.module.css'
+
+interface SessionSummary {
+  id: string
+  hostNickname: string
+  playerCount: number
+  phase: string
+}
 
 export default function Home() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [sessionCode, setSessionCode] = useState('')
   const [nickname, setNickname] = useState('')
-  const [displayMode] = useState<DisplayMode>('OWN_DEVICE')
-  const [lang, setLang] = useState<Language>((localStorage.getItem('lang') as Language) ?? 'DE')
+  const [joinCode, setJoinCode] = useState('')
+  const [lang, setLang] = useState(localStorage.getItem('lang') ?? 'DE')
+  const [sessions, setSessions] = useState<SessionSummary[]>([])
+  const nicknameRef = useRef<HTMLInputElement>(null)
 
-  function switchLang(l: Language) {
+  const switchLang = (l: string) => {
     setLang(l)
-    localStorage.setItem('lang', l.toLowerCase())
+    localStorage.setItem('lang', l)
     i18n.changeLanguage(l.toLowerCase())
   }
 
-  async function handleNewSession() {
+  // Poll active sessions every 5 seconds
+  useEffect(() => {
+    const fetchSessions = () =>
+      fetch('/api/sessions')
+        .then(r => r.json())
+        .then(setSessions)
+        .catch(() => {})
+    fetchSessions()
+    const id = setInterval(fetchSessions, 5000)
+    return () => clearInterval(id)
+  }, [])
+
+  const createSession = async () => {
     if (!nickname.trim()) return
     const res = await fetch('/api/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, displayMode, language: lang }),
+      body: JSON.stringify({ nickname, displayMode: 'OWN_DEVICE', language: lang }),
     })
     const data = await res.json()
     localStorage.setItem(`nickname-${data.sessionId}`, nickname)
@@ -31,39 +51,83 @@ export default function Home() {
     navigate(`/session/${data.sessionId}`)
   }
 
-  function handleJoin() {
-    const code = sessionCode.trim().toUpperCase()
-    if (!code || !nickname.trim()) return
-    localStorage.setItem(`nickname-${code}`, nickname)
-    navigate(`/join/${code}`)
+  const joinSession = () => {
+    if (!joinCode.trim()) return
+    navigate(`/join/${joinCode.trim().toUpperCase()}`)
+  }
+
+  const prefillJoin = (id: string) => {
+    setJoinCode(id)
+    nicknameRef.current?.focus()
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: '0 auto', padding: 24 }}>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 16 }}>
-        <button onClick={() => switchLang('DE')} style={{ fontWeight: lang === 'DE' ? 'bold' : 'normal' }}>DE</button>
-        <button onClick={() => switchLang('EN')} style={{ fontWeight: lang === 'EN' ? 'bold' : 'normal' }}>EN</button>
+    <div className={styles.page}>
+      <div className={styles.header}>
+        <h1 className={styles.logo}>🎨 Canvas</h1>
+        <p className={styles.subtitle}>{t('home.subtitle', 'Zeichnen & Raten mit Freunden')}</p>
       </div>
-      <h1>{t('home.title')}</h1>
-      <input
-        placeholder={t('nickname.placeholder')}
-        value={nickname}
-        onChange={e => setNickname(e.target.value)}
-        style={{ width: '100%', padding: 8, marginBottom: 16 }}
-      />
-      <button onClick={handleNewSession} style={{ width: '100%', padding: 12, marginBottom: 8 }}>
-        {t('home.newSession')}
-      </button>
-      <hr style={{ margin: '16px 0' }} />
-      <input
-        placeholder={t('home.sessionId')}
-        value={sessionCode}
-        onChange={e => setSessionCode(e.target.value)}
-        style={{ width: '100%', padding: 8, marginBottom: 8 }}
-      />
-      <button onClick={handleJoin} style={{ width: '100%', padding: 12 }}>
-        {t('home.joinSession')}
-      </button>
+
+      <div className={styles.card}>
+        <div className={styles.langRow}>
+          {['DE', 'EN'].map(l => (
+            <button
+              key={l}
+              className={`${styles.langBtn} ${lang === l ? styles.langBtnActive : ''}`}
+              onClick={() => switchLang(l)}
+            >{l}</button>
+          ))}
+        </div>
+
+        <input
+          ref={nicknameRef}
+          className={styles.input}
+          placeholder={t('home.nickname', 'Dein Nickname')}
+          value={nickname}
+          onChange={e => setNickname(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && createSession()}
+        />
+        <button className={styles.btnPrimary} onClick={createSession}>
+          + {t('home.newGame', 'Neues Spiel')}
+        </button>
+
+        <hr className={styles.divider} />
+
+        <input
+          className={styles.input}
+          placeholder={t('home.code', 'Spiel-Code')}
+          value={joinCode}
+          onChange={e => setJoinCode(e.target.value.toUpperCase())}
+          onKeyDown={e => e.key === 'Enter' && joinSession()}
+        />
+        <button className={styles.btnSecondary} onClick={joinSession}>
+          {t('home.join', 'Beitreten')}
+        </button>
+      </div>
+
+      <div className={styles.card}>
+        <div className={styles.sessionListTitle}>
+          {t('home.activeSessions', 'Aktive Sessions')}
+          {sessions.length > 0 && ` (${sessions.length})`}
+        </div>
+        {sessions.length === 0 ? (
+          <div className={styles.empty}>{t('home.noSessions', 'Keine aktiven Sessions')}</div>
+        ) : sessions.map(s => (
+          <div key={s.id} className={styles.sessionItem}>
+            <div className={styles.sessionInfo}>
+              <span className={styles.sessionName}>{s.hostNickname}</span>
+              <span className={styles.sessionMeta}>{s.playerCount} Spieler · {s.id}</span>
+            </div>
+            {s.phase === 'LOBBY' ? (
+              <button className={styles.joinBtn} onClick={() => prefillJoin(s.id)}>
+                {t('home.join', 'Beitreten')}
+              </button>
+            ) : (
+              <span className={styles.runningBadge}>läuft</span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
