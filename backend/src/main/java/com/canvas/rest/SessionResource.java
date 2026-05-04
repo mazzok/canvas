@@ -5,6 +5,7 @@ import com.canvas.model.Language;
 import com.canvas.model.Session;
 import com.canvas.session.SessionManager;
 import jakarta.inject.Inject;
+import java.util.List;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -48,5 +49,20 @@ public class SessionResource {
         return Response.status(201)
             .entity(new CreateSessionResponse(session.id, joinUrl, playerId))
             .build();
+    }
+
+    public record SessionSummary(String id, String hostNickname, int playerCount, String phase) {}
+
+    @GET
+    public Response listSessions() {
+        List<SessionSummary> result = sessionManager.listSessions().stream()
+            .map(s -> {
+                String hostNickname = s.players.values().stream()
+                    .filter(p -> p.isHost).findFirst()
+                    .map(p -> p.nickname).orElse("?");
+                return new SessionSummary(s.id, hostNickname, s.players.size(), s.phase.name());
+            })
+            .collect(java.util.stream.Collectors.toList());
+        return Response.ok(result).build();
     }
 }

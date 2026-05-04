@@ -3,6 +3,8 @@ package com.canvas.session;
 import com.canvas.model.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +56,10 @@ public class SessionManager {
         Player player = new Player(newId, nickname, false);
         session.players.put(newId, player);
         return player;
+    }
+
+    public List<Session> listSessions() {
+        return new ArrayList<>(sessions.values());
     }
 
     /** Only used in tests to reset state between runs. */
