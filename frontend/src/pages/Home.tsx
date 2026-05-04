@@ -16,13 +16,14 @@ export default function Home() {
   const navigate = useNavigate()
   const [nickname, setNickname] = useState('')
   const [joinCode, setJoinCode] = useState('')
-  const [lang, setLang] = useState(localStorage.getItem('lang') ?? 'DE')
+  const [lang, setLang] = useState((localStorage.getItem('lang') ?? 'de').toUpperCase())
+  const [error, setError] = useState<string | null>(null)
   const [sessions, setSessions] = useState<SessionSummary[]>([])
   const nicknameRef = useRef<HTMLInputElement>(null)
 
   const switchLang = (l: string) => {
     setLang(l)
-    localStorage.setItem('lang', l)
+    localStorage.setItem('lang', l.toLowerCase())
     i18n.changeLanguage(l.toLowerCase())
   }
 
@@ -40,15 +41,21 @@ export default function Home() {
 
   const createSession = async () => {
     if (!nickname.trim()) return
-    const res = await fetch('/api/sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, displayMode: 'OWN_DEVICE', language: lang }),
-    })
-    const data = await res.json()
-    localStorage.setItem(`nickname-${data.sessionId}`, nickname)
-    localStorage.setItem(`playerId-${data.sessionId}`, data.playerId)
-    navigate(`/session/${data.sessionId}`)
+    setError(null)
+    try {
+      const res = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname, displayMode: 'OWN_DEVICE', language: lang }),
+      })
+      if (!res.ok) { setError('Fehler beim Erstellen der Session'); return }
+      const data = await res.json()
+      localStorage.setItem(`nickname-${data.sessionId}`, nickname)
+      localStorage.setItem(`playerId-${data.sessionId}`, data.playerId)
+      navigate(`/session/${data.sessionId}`)
+    } catch {
+      setError('Keine Verbindung zum Server')
+    }
   }
 
   const joinSession = () => {
@@ -103,6 +110,7 @@ export default function Home() {
         <button className={styles.btnSecondary} onClick={joinSession}>
           {t('home.join', 'Beitreten')}
         </button>
+        {error && <p style={{ color: 'red', fontSize: 13, marginTop: 8 }}>{error}</p>}
       </div>
 
       <div className={styles.card}>
@@ -123,7 +131,7 @@ export default function Home() {
                 {t('home.join', 'Beitreten')}
               </button>
             ) : (
-              <span className={styles.runningBadge}>läuft</span>
+              <span className={styles.runningBadge}>{t('home.running', 'läuft')}</span>
             )}
           </div>
         ))}
