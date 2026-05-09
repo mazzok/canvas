@@ -22,7 +22,9 @@ COPY frontend/src/ frontend/src/
 COPY backend/src/ backend/src/
 
 # Build: installs Node, builds React, packages Quarkus
-RUN mvn -f backend/pom.xml package -DskipTests
+# Root path must be set at build time (Quarkus build-time property)
+ARG QUARKUS_ROOT_PATH=/
+RUN mvn -f backend/pom.xml package -DskipTests -Dquarkus.http.root-path=${QUARKUS_ROOT_PATH}
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre

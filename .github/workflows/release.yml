@@ -37,6 +37,7 @@ jobs:
           push: true
           build-args: |
             VITE_BASE_PATH=/canvas/
+            QUARKUS_ROOT_PATH=/canvas
           tags: |
             ghcr.io/mazzok/canvas:latest
             ghcr.io/mazzok/canvas:${{ github.sha }}
