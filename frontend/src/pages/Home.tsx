@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { QRCodeSVG } from 'qrcode.react'
 import i18n from '../i18n'
 import styles from './Home.module.css'
 
@@ -9,6 +10,7 @@ interface SessionSummary {
   hostNickname: string
   playerCount: number
   phase: string
+  joinUrl: string
 }
 
 export default function Home() {
@@ -122,6 +124,7 @@ export default function Home() {
           <div className={styles.empty}>{t('home.noSessions', 'Keine aktiven Sessions')}</div>
         ) : sessions.map(s => (
           <div key={s.id} className={styles.sessionItem}>
+            <QRCodeSVG value={s.joinUrl} size={40} className={styles.sessionQr} />
             <div className={styles.sessionInfo}>
               <span className={styles.sessionName}>{s.hostNickname}</span>
               <span className={styles.sessionMeta}>{s.playerCount} Spieler · {s.id}</span>
@@ -136,6 +139,7 @@ export default function Home() {
           </div>
         ))}
       </div>
+
     </div>
   )
 }

@@ -58,6 +58,7 @@ public class GameWebSocket {
             LOG.info("parsed type=" + msg.type);
             com.canvas.model.Session gameSession = sessionManager.getSession(sessionId);
             LOG.info("session=" + (gameSession == null ? "NULL" : gameSession.id));
+            if (gameSession != null) gameSession.touch();
 
             switch (msg.type) {
                 case JOIN -> handleJoin(ws, gameSession, msg.payload);

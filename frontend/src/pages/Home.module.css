@@ -121,17 +121,24 @@
 
 .sessionItem {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 10px;
   padding: 10px;
   border-radius: var(--radius-btn);
   margin-bottom: 6px;
   background: var(--color-bg);
 }
 
+.sessionQr {
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
 .sessionInfo {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .sessionName {

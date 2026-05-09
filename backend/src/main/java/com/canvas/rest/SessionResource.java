@@ -52,7 +52,7 @@ public class SessionResource {
             .build();
     }
 
-    public record SessionSummary(String id, String hostNickname, int playerCount, String phase) {}
+    public record SessionSummary(String id, String hostNickname, int playerCount, String phase, String joinUrl) {}
 
     @GET
     public Response listSessions() {
@@ -61,7 +61,8 @@ public class SessionResource {
                 String hostNickname = s.players.values().stream()
                     .filter(p -> p.isHost).findFirst()
                     .map(p -> p.nickname).orElse("?");
-                return new SessionSummary(s.id, hostNickname, s.players.size(), s.phase.name());
+                String joinUrl = baseUrl + "/join/" + s.id;
+                return new SessionSummary(s.id, hostNickname, s.players.size(), s.phase.name(), joinUrl);
             })
             .collect(Collectors.toList());
         return Response.ok(result).build();

@@ -1,20 +1,49 @@
 package com.canvas.session;
 
 import com.canvas.model.*;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 public class SessionManager {
 
+    private static final Logger LOG = Logger.getLogger(SessionManager.class.getName());
+    private static final Duration IDLE_TIMEOUT = Duration.ofMinutes(5);
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private final SecureRandom rng = new SecureRandom();
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService cleaner = Executors.newSingleThreadScheduledExecutor();
+
+    @PostConstruct
+    void startCleanup() {
+        cleaner.scheduleAtFixedRate(this::removeIdleSessions, 1, 1, TimeUnit.MINUTES);
+    }
+
+    @PreDestroy
+    void stopCleanup() {
+        cleaner.shutdownNow();
+    }
+
+    void removeIdleSessions() {
+        Instant cutoff = Instant.now().minus(IDLE_TIMEOUT);
+        sessions.values().removeIf(s -> {
+            if (!s.hasConnectedPlayers() && s.lastActivityAt.isBefore(cutoff)) {
+                LOG.info("Removing idle session " + s.id + " (no players since " + s.lastActivityAt + ")");
+                return true;
+            }
+            return false;
+        });
+    }
 
     public Session createSession(DisplayMode displayMode, Language language, String hostNickname) {
         // Build the host player and session fully before publishing to the map

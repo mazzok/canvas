@@ -1,25 +1,41 @@
 version: "3.9"
 
+networks:
+  canvas-net:
+    driver: bridge
+
 services:
-  mongodb:
+  canvas-mongodb:
     image: mongo:7
+    container_name: canvas-mongodb
+    networks:
+      - canvas-net
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  backend:
+  canvas-app:
     build:
-      context: backend
-      dockerfile: src/main/docker/Dockerfile.jvm
+      context: .
+      dockerfile: Dockerfile
+    container_name: canvas-app
+    networks:
+      - canvas-net
     ports:
       - "8080:8080"
     environment:
-      QUARKUS_MONGODB_CONNECTION_STRING: mongodb://mongodb:27017
+      QUARKUS_MONGODB_CONNECTION_STRING: mongodb://canvas-mongodb:27017
       QUARKUS_MONGODB_DATABASE: canvas
-      APP_BASE_URL: http://localhost:8080
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
     depends_on:
-      - mongodb
+      canvas-mongodb:
+        condition: service_healthy
 
 volumes:
   mongo-data:

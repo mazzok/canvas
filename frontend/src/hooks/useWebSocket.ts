@@ -8,30 +8,35 @@ export function useWebSocket(
   const wsRef = useRef<WebSocket | null>(null)
   const onMessageRef = useRef(onMessage)
   onMessageRef.current = onMessage
+  const queueRef = useRef<WsMessage[]>([])
 
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    const host = window.location.host
-    const url = `${protocol}://${host}/ws/${sessionId}`
+    const url = `${protocol}://${window.location.host}/ws/${sessionId}`
     const ws = new WebSocket(url)
     wsRef.current = ws
 
     ws.onopen = () => {
-      // Connection ready — caller will send JOIN
+      console.log('[WS] connected, flushing', queueRef.current.length, 'queued msgs')
+      queueRef.current.forEach(msg => ws.send(JSON.stringify(msg)))
+      queueRef.current = []
     }
 
     ws.onmessage = (event) => {
       try {
         const msg: WsMessage = JSON.parse(event.data)
+        console.log('[WS] received:', msg.type, msg.payload)
         onMessageRef.current(msg)
       } catch { /* ignore malformed messages */ }
     }
 
     ws.onclose = () => {
-      wsRef.current = null
+      if (wsRef.current === ws) wsRef.current = null
     }
 
     return () => {
+      queueRef.current = []   // discard queued msgs from this mount cycle
+      wsRef.current = null
       ws.close()
     }
   }, [sessionId])
@@ -40,6 +45,9 @@ export function useWebSocket(
     const ws = wsRef.current
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(msg))
+    } else {
+      // Socket not yet open — buffer until onopen fires
+      queueRef.current.push(msg)
     }
   }, [])
 
