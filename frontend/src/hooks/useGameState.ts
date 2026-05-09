@@ -25,6 +25,10 @@ function reducer(state: GameState, msg: WsMessage): GameState {
         language: p.language as GameState['language'],
         players: p.players as Player[],
         strokeHistory: (p.strokeHistory as StrokeEvent[]) ?? [],
+        joinUrl: p.joinUrl as string | undefined,
+        categoryVotes: undefined,
+        categoryCountdownLeft: undefined,
+        categoryOptions: undefined,
       }
     case 'PLAYER_JOINED':
       return { ...state, players: p.players as Player[] }
@@ -35,7 +39,15 @@ function reducer(state: GameState, msg: WsMessage): GameState {
           pl.id === p.playerId ? { ...pl, connected: false } : pl),
       }
     case 'CATEGORY_OPTIONS':
-      return { ...state, phase: 'CATEGORY' }
+      return { ...state, phase: 'CATEGORY', categoryOptions: msg.payload.categories as string[] }
+    case 'CATEGORY_VOTES': {
+      const p = msg.payload
+      return {
+        ...state,
+        categoryVotes: p.votes as Record<string, string[]>,
+        categoryCountdownLeft: p.countdownStarted ? p.secondsLeft as number : undefined,
+      }
+    }
     case 'ROUND_STARTED':
       return {
         ...state,
@@ -48,6 +60,9 @@ function reducer(state: GameState, msg: WsMessage): GameState {
         secretWord: undefined,
         strokeHistory: [],
         revealedLetters: undefined,
+        categoryVotes: undefined,
+        categoryCountdownLeft: undefined,
+        categoryOptions: undefined,
       }
     case 'WORD_SECRET':
       return { ...state, secretWord: p.word as string }
@@ -77,6 +92,8 @@ function reducer(state: GameState, msg: WsMessage): GameState {
         strokeHistory: [],
         players: (p.scores as Player[]) ?? state.players,
       }
+    case 'ERROR':
+      return { ...state, sessionError: p.message as string }
     default:
       return state
   }

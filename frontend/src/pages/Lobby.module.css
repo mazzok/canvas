@@ -1,0 +1,190 @@
+.page {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+}
+
+/* Countdown banner */
+.countdown {
+  background: linear-gradient(90deg, var(--color-primary), #8b5cf6);
+  color: #fff;
+  border-radius: var(--radius-card);
+  padding: 14px 20px;
+  text-align: center;
+}
+
+.countdownLabel {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-bottom: 2px;
+}
+
+.countdownNumber {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.countdownBar {
+  background: rgba(255,255,255,0.25);
+  border-radius: 4px;
+  height: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.countdownBarFill {
+  background: #fff;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s linear;
+}
+
+/* Category grid */
+.cardTitle {
+  font-weight: 700;
+  color: var(--color-text);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.categoryBtn {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.categoryBtnSelected {
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.categoryEmoji {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.categoryName {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.categoryCheck {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--color-primary);
+  font-size: 14px;
+}
+
+.voterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.chip {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 11px;
+}
+
+.chipSelf {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.hintText {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+/* Player list */
+.playerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.playerRowSelf {
+  background: var(--color-primary-light);
+}
+
+.playerName {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.playerVoteChip {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.playerNoVote {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+/* QR + host controls */
+.qrSection {
+  text-align: center;
+}
+
+.joinUrl {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 8px;
+  word-break: break-all;
+}
+
+.startBtn {
+  width: 100%;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-btn);
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.startBtn:hover { opacity: 0.9; }
+
+.waitText {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}

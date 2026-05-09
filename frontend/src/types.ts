@@ -26,6 +26,8 @@ export interface GameState {
   playerId: string
   isHost: boolean
   phase: GamePhase
+  joinUrl?: string       // set by backend in GAME_STATE, used for QR code
+  sessionError?: string  // set when backend sends ERROR (e.g. session not found)
   displayMode: DisplayMode
   language: Language
   players: Player[]
@@ -43,12 +45,17 @@ export interface GameState {
   // Result
   lastWord?: string
   lastRoundReason?: 'guessed' | 'timeout'
+  // Category voting
+  categoryOptions?: string[]
+  categoryVotes?: Record<string, string[]>   // category → player IDs
+  categoryCountdownLeft?: number             // undefined = countdown not started
 }
 
 export type MessageType =
-  | 'JOIN' | 'START_GAME' | 'SELECT_CATEGORY' | 'STROKE' | 'DRAWING_DONE' | 'GUESS'
+  | 'JOIN' | 'START_GAME' | 'SELECT_CATEGORY' | 'VOTE_CATEGORY'
+  | 'STROKE' | 'DRAWING_DONE' | 'GUESS'
   | 'GAME_STATE' | 'PLAYER_JOINED' | 'PLAYER_DISCONNECTED'
-  | 'CATEGORY_OPTIONS' | 'ROUND_STARTED' | 'WORD_SECRET'
+  | 'CATEGORY_OPTIONS' | 'CATEGORY_VOTES' | 'ROUND_STARTED' | 'WORD_SECRET'
   | 'COUNTDOWN' | 'HINT' | 'CORRECT_GUESS' | 'ROUND_ENDED' | 'TIMER_TICK' | 'ERROR'
 
 export interface WsMessage {

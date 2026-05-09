@@ -1,5 +1,7 @@
 package com.canvas.model;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,6 +15,10 @@ public class Session {
     // ConcurrentHashMap for thread-safe individual ops; compound read-modify-write must use synchronized(session)
     public Map<String, Player> players = new ConcurrentHashMap<>();
     public Round currentRound; // null between rounds
+    // category name → list of player IDs who voted for it
+    public Map<String, List<String>> categoryVotes = new ConcurrentHashMap<>();
+    // Tracks when any player was last connected; used for idle-session cleanup
+    public volatile Instant lastActivityAt = Instant.now();
 
     public Session() {}
 
@@ -22,5 +28,14 @@ public class Session {
         this.displayMode = displayMode;
         this.language = language;
         this.phase = GamePhase.LOBBY;
+        this.lastActivityAt = Instant.now();
+    }
+
+    public void touch() {
+        this.lastActivityAt = Instant.now();
+    }
+
+    public boolean hasConnectedPlayers() {
+        return players.values().stream().anyMatch(p -> p.connected);
     }
 }

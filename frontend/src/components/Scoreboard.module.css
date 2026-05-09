@@ -1,0 +1,29 @@
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-bg);
+}
+
+.rowSelf {
+  background: var(--color-primary-light);
+}
+
+.name {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.score {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 14px;
+}

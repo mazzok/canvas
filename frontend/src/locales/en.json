@@ -3,7 +3,15 @@
     "title": "Drawing Game",
     "newSession": "Start New Session",
     "joinSession": "Join Session",
-    "sessionId": "Session Code"
+    "sessionId": "Session Code",
+    "subtitle": "Draw & Guess with Friends",
+    "nickname": "Your nickname",
+    "newGame": "New Game",
+    "code": "Game code",
+    "join": "Join",
+    "activeSessions": "Active Sessions",
+    "noSessions": "No active sessions",
+    "running": "running"
   },
   "nickname": {
     "title": "What's your name?",
@@ -15,7 +23,12 @@
     "players": "Players",
     "scanQr": "Scan QR code or share link:",
     "startGame": "Start Game",
-    "waitingForHost": "Waiting for host..."
+    "waitingForHost": "Waiting for host...",
+    "startsIn": "Game starts in",
+    "chooseCategory": "Choose a category",
+    "canChange": "You can still change your choice",
+    "choosing": "choosing…",
+    "waitHost": "Waiting for host…"
   },
   "drawing": {
     "yourTurn": "Your turn to draw",

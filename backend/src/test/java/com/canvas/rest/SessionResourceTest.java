@@ -34,4 +34,14 @@ class SessionResourceTest {
             .then()
             .statusCode(400);
     }
+
+    @Test
+    void listSessions_returnsJsonArray() {
+        RestAssured.given()
+            .when().get("/api/sessions")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("$", hasSize(greaterThanOrEqualTo(0)));
+    }
 }

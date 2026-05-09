@@ -20,14 +20,20 @@ import jakarta.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @ServerEndpoint("/ws/{sessionId}")
 @ApplicationScoped
 public class GameWebSocket {
 
+    private static final Logger LOG = Logger.getLogger(GameWebSocket.class.getName());
+
     @Inject SessionManager sessionManager;
     @Inject GameEngine gameEngine;
+
+    @org.eclipse.microprofile.config.inject.ConfigProperty(name = "app.base-url", defaultValue = "http://localhost:8080")
+    String baseUrl;
 
     private final ObjectMapper mapper;
     private final Map<Session, String> wsToPlayerId = new ConcurrentHashMap<>();
@@ -46,13 +52,18 @@ public class GameWebSocket {
 
     @OnMessage
     public void onMessage(String raw, Session ws, @PathParam("sessionId") String sessionId) {
+        LOG.info("onMessage sessionId=" + sessionId + " raw=" + raw);
         try {
             WsMessage msg = mapper.readValue(raw, WsMessage.class);
+            LOG.info("parsed type=" + msg.type);
             com.canvas.model.Session gameSession = sessionManager.getSession(sessionId);
+            LOG.info("session=" + (gameSession == null ? "NULL" : gameSession.id));
+            if (gameSession != null) gameSession.touch();
 
             switch (msg.type) {
                 case JOIN -> handleJoin(ws, gameSession, msg.payload);
                 case START_GAME -> handleStartGame(ws, gameSession);
+                case VOTE_CATEGORY -> handleVoteCategory(ws, gameSession, msg.payload);
                 case SELECT_CATEGORY -> handleSelectCategory(ws, gameSession, msg.payload);
                 case STROKE -> handleStroke(ws, gameSession, msg.payload);
                 case DRAWING_DONE -> handleDrawingDone(ws, gameSession);
@@ -60,7 +71,8 @@ public class GameWebSocket {
                 default -> sendTo(ws, WsMessage.error("Unknown message type: " + msg.type));
             }
         } catch (Exception e) {
-            sendTo(ws, WsMessage.error("Invalid message format"));
+            LOG.severe("onMessage exception: " + e);
+            sendTo(ws, WsMessage.error("Invalid message format: " + e.getMessage()));
         }
     }
 
@@ -86,7 +98,8 @@ public class GameWebSocket {
     // ── Handlers ─────────────────────────────────────────────────────────────
 
     private void handleJoin(Session ws, com.canvas.model.Session gameSession, Map<String, Object> payload) {
-        if (gameSession == null) { sendTo(ws, WsMessage.error("Session not found")); return; }
+        LOG.info("handleJoin payload=" + payload);
+        if (gameSession == null) { LOG.warning("Session not found"); sendTo(ws, WsMessage.error("Session not found")); return; }
 
         String nickname = (String) payload.get("nickname");
         String existingPlayerId = (String) payload.get("playerId");
@@ -105,6 +118,7 @@ public class GameWebSocket {
 
         List<Map<String, Object>> playerList = buildPlayerList(gameSession);
 
+        String joinUrl = baseUrl + "/join/" + gameSession.id;
         sendTo(ws, WsMessage.of(MessageType.GAME_STATE, Map.of(
             "playerId", player.id,
             "isHost", player.isHost,
@@ -112,7 +126,8 @@ public class GameWebSocket {
             "displayMode", gameSession.displayMode.name(),
             "language", gameSession.language.name(),
             "players", playerList,
-            "strokeHistory", strokeReplay
+            "strokeHistory", strokeReplay,
+            "joinUrl", joinUrl
         )));
 
         broadcast(gameSession, WsMessage.of(MessageType.PLAYER_JOINED, Map.of(
@@ -129,12 +144,84 @@ public class GameWebSocket {
         if (gameSession.phase != GamePhase.LOBBY) { sendTo(ws, WsMessage.error("Game already started")); return; }
 
         gameSession.phase = GamePhase.CATEGORY;
-        List<String> categories = List.of("tiere", "pflanzen", "natur", "maerchen", "garten");
+        gameSession.categoryVotes.clear();
         broadcast(gameSession, WsMessage.of(MessageType.CATEGORY_OPTIONS,
-            Map.of("categories", categories)));
+            Map.of("categories", CATEGORIES)));
+        broadcast(gameSession, WsMessage.of(MessageType.CATEGORY_VOTES,
+            Map.of("votes", Map.of(), "countdownStarted", false, "secondsLeft", 10)));
+    }
+
+    private void handleVoteCategory(Session ws, com.canvas.model.Session gameSession, Map<String, Object> payload) {
+        if (gameSession == null || gameSession.phase != GamePhase.CATEGORY) return;
+        String playerId = wsToPlayerId.get(ws);
+        if (playerId == null) return;
+
+        String category = (String) payload.get("category");
+        if (category == null || !CATEGORIES.contains(category)) return;
+
+        synchronized (gameSession) {
+            // Remove this player from any previous vote
+            gameSession.categoryVotes.values().forEach(voters -> voters.remove(playerId));
+            // Add to new category
+            gameSession.categoryVotes
+                .computeIfAbsent(category, k -> new java.util.concurrent.CopyOnWriteArrayList<>())
+                .add(playerId);
+
+            boolean isFirstVote = activeTimers.get(gameSession.id + "-category") == null;
+            broadcastCategoryVotes(gameSession, isFirstVote, 10);
+
+            if (isFirstVote) {
+                startCategoryCountdown(gameSession);
+            }
+        }
+    }
+
+    private void broadcastCategoryVotes(com.canvas.model.Session gameSession, boolean countdownStarted, long secondsLeft) {
+        broadcast(gameSession, WsMessage.of(MessageType.CATEGORY_VOTES, Map.of(
+            "votes", new HashMap<>(gameSession.categoryVotes),
+            "countdownStarted", countdownStarted || activeTimers.containsKey(gameSession.id + "-category"),
+            "secondsLeft", secondsLeft
+        )));
+    }
+
+    private static final List<String> CATEGORIES = List.of("tiere", "pflanzen", "natur", "maerchen", "garten");
+
+    private void startCategoryCountdown(com.canvas.model.Session gameSession) {
+        String key = gameSession.id + "-category";
+        long[] secondsLeft = {10};
+
+        ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(() -> {
+            secondsLeft[0]--;
+            broadcastCategoryVotes(gameSession, true, secondsLeft[0]);
+
+            if (secondsLeft[0] <= 0) {
+                synchronized (gameSession) {
+                    cancelTimer(key);
+                    String winner = gameEngine.resolveCategory(gameSession.categoryVotes, CATEGORIES);
+                    gameSession.categoryVotes.clear();
+                    String drawerId = gameEngine.startRound(gameSession, winner);
+                    Player drawer = gameSession.players.get(drawerId);
+                    broadcast(gameSession, WsMessage.of(MessageType.ROUND_STARTED, Map.of(
+                        "drawerId", drawerId,
+                        "drawerNickname", drawer.nickname,
+                        "category", winner,
+                        "wordLength", gameSession.currentRound.word.length(),
+                        "firstLetter", String.valueOf(gameSession.currentRound.word.charAt(0))
+                    )));
+                    getWsForPlayer(gameSession, drawerId).ifPresent(drawerWs ->
+                        sendTo(drawerWs, WsMessage.of(MessageType.WORD_SECRET,
+                            Map.of("word", gameSession.currentRound.word))));
+                    startDrawingTimer(gameSession);
+                }
+            }
+        }, 1, 1, TimeUnit.SECONDS);
+        activeTimers.put(key, future);
     }
 
     private void handleSelectCategory(Session ws, com.canvas.model.Session gameSession, Map<String, Object> payload) {
+        if (gameSession == null || gameSession.phase != GamePhase.CATEGORY) {
+            sendTo(ws, WsMessage.error("Not in CATEGORY phase")); return;
+        }
         String playerId = wsToPlayerId.get(ws);
         if (!isHost(gameSession, playerId)) { sendTo(ws, WsMessage.error("Only host can select category")); return; }
 
@@ -313,8 +400,8 @@ public class GameWebSocket {
 
     private void sendRaw(Session ws, String json) {
         try {
-            if (ws.isOpen()) ws.getBasicRemote().sendText(json);
-        } catch (IOException ignored) {}
+            if (ws.isOpen()) ws.getAsyncRemote().sendText(json);
+        } catch (Exception ignored) {}
     }
 
     private Optional<Session> getWsForPlayer(com.canvas.model.Session gameSession, String playerId) {

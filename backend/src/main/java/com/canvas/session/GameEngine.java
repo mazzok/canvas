@@ -98,4 +98,20 @@ public class GameEngine {
         if (elapsedSeconds >= 20) return 1;
         return 0;
     }
+
+    /**
+     * Pick the winning category from votes.
+     * Most votes wins; ties broken randomly.
+     */
+    public String resolveCategory(Map<String, List<String>> votes, List<String> allCategories) {
+        if (votes.isEmpty()) {
+            return allCategories.get(ThreadLocalRandom.current().nextInt(allCategories.size()));
+        }
+        int max = votes.values().stream().mapToInt(List::size).max().orElse(0);
+        List<String> winners = votes.entrySet().stream()
+            .filter(e -> e.getValue().size() == max)
+            .map(Map.Entry::getKey)
+            .collect(java.util.stream.Collectors.toList());
+        return winners.get(ThreadLocalRandom.current().nextInt(winners.size()));
+    }
 }

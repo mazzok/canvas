@@ -3,7 +3,15 @@
     "title": "Zeichen-Spiel",
     "newSession": "Neue Session starten",
     "joinSession": "Session beitreten",
-    "sessionId": "Session-Code"
+    "sessionId": "Session-Code",
+    "subtitle": "Zeichnen & Raten mit Freunden",
+    "nickname": "Dein Nickname",
+    "newGame": "Neues Spiel",
+    "code": "Spiel-Code",
+    "join": "Beitreten",
+    "activeSessions": "Aktive Sessions",
+    "noSessions": "Keine aktiven Sessions",
+    "running": "läuft"
   },
   "nickname": {
     "title": "Wie heißt du?",
@@ -15,7 +23,12 @@
     "players": "Spieler",
     "scanQr": "QR-Code scannen oder Link teilen:",
     "startGame": "Spiel starten",
-    "waitingForHost": "Warte auf den Host..."
+    "waitingForHost": "Warte auf den Host...",
+    "startsIn": "Spiel startet in",
+    "chooseCategory": "Kategorie wählen",
+    "canChange": "Du kannst deine Wahl noch ändern",
+    "choosing": "wählt…",
+    "waitHost": "Warte auf den Host…"
   },
   "drawing": {
     "yourTurn": "Du zeichnest",
