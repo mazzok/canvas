@@ -11,7 +11,11 @@
     "join": "Join",
     "activeSessions": "Active Sessions",
     "noSessions": "No active sessions",
-    "running": "running"
+    "running": "running",
+    "statusWaiting": "Waiting for players",
+    "statusStarting": "Starting...",
+    "statusInProgress": "Round in progress",
+    "statusEnded": "Round ended"
   },
   "nickname": {
     "title": "What's your name?",

@@ -13,11 +13,23 @@ interface SessionSummary {
   joinUrl: string
 }
 
+function statusFor(phase: string, t: (key: string, fallback: string) => string) {
+  switch (phase) {
+    case 'LOBBY':
+      return { label: t('home.statusWaiting', 'Waiting for players'), style: styles.statusWaiting }
+    case 'CATEGORY':
+      return { label: t('home.statusStarting', 'Starting...'), style: styles.statusStarting }
+    case 'RESULT':
+      return { label: t('home.statusEnded', 'Round ended'), style: styles.statusEnded }
+    default:
+      return { label: t('home.statusInProgress', 'Round in progress'), style: styles.statusInProgress }
+  }
+}
+
 export default function Home() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [nickname, setNickname] = useState('')
-  const [joinCode, setJoinCode] = useState('')
   const [lang, setLang] = useState((localStorage.getItem('lang') ?? 'de').toUpperCase())
   const [error, setError] = useState<string | null>(null)
   const [sessions, setSessions] = useState<SessionSummary[]>([])
@@ -62,15 +74,13 @@ export default function Home() {
     }
   }
 
-  const joinSession = () => {
-    if (!joinCode.trim()) return
-    navigate(`/join/${joinCode.trim().toUpperCase()}`)
+  const joinDirectly = (sessionId: string) => {
+    if (!nickname.trim()) return
+    localStorage.setItem(`nickname-${sessionId}`, nickname.trim())
+    navigate(`/session/${sessionId}`)
   }
 
-  const prefillJoin = (id: string) => {
-    setJoinCode(id)
-    nicknameRef.current?.focus()
-  }
+  const hasNickname = nickname.trim().length > 0
 
   return (
     <div className={styles.page}>
@@ -98,21 +108,8 @@ export default function Home() {
           onChange={e => setNickname(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && createSession()}
         />
-        <button className={styles.btnPrimary} onClick={createSession}>
+        <button className={styles.btnPrimary} onClick={createSession} disabled={!hasNickname}>
           + {t('home.newGame', 'Neues Spiel')}
-        </button>
-
-        <hr className={styles.divider} />
-
-        <input
-          className={styles.input}
-          placeholder={t('home.code', 'Spiel-Code')}
-          value={joinCode}
-          onChange={e => setJoinCode(e.target.value.toUpperCase())}
-          onKeyDown={e => e.key === 'Enter' && joinSession()}
-        />
-        <button className={styles.btnSecondary} onClick={joinSession}>
-          {t('home.join', 'Beitreten')}
         </button>
         {error && <p style={{ color: 'red', fontSize: 13, marginTop: 8 }}>{error}</p>}
       </div>
@@ -124,22 +121,30 @@ export default function Home() {
         </div>
         {sessions.length === 0 ? (
           <div className={styles.empty}>{t('home.noSessions', 'Keine aktiven Sessions')}</div>
-        ) : sessions.map(s => (
-          <div key={s.id} className={styles.sessionItem}>
-            <QRCodeSVG value={s.joinUrl} size={40} className={styles.sessionQr} />
-            <div className={styles.sessionInfo}>
-              <span className={styles.sessionName}>{s.hostNickname}</span>
-              <span className={styles.sessionMeta}>{s.playerCount} Spieler · {s.id}</span>
+        ) : sessions.map(s => {
+          const status = statusFor(s.phase, t)
+          return (
+            <div key={s.id} className={styles.sessionItem}>
+              <QRCodeSVG value={s.joinUrl} size={40} className={styles.sessionQr} />
+              <div className={styles.sessionInfo}>
+                <span className={styles.sessionName}>{s.hostNickname}</span>
+                <span className={styles.sessionMeta}>{s.playerCount} {t('lobby.players', 'Spieler')} · {s.id}</span>
+              </div>
+              <div className={styles.sessionRight}>
+                <span className={`${styles.statusBadge} ${status.style}`}>{status.label}</span>
+                {s.phase === 'LOBBY' && (
+                  <button
+                    className={styles.joinBtn}
+                    onClick={() => joinDirectly(s.id)}
+                    disabled={!hasNickname}
+                  >
+                    {t('home.join', 'Beitreten')}
+                  </button>
+                )}
+              </div>
             </div>
-            {s.phase === 'LOBBY' ? (
-              <button className={styles.joinBtn} onClick={() => prefillJoin(s.id)}>
-                {t('home.join', 'Beitreten')}
-              </button>
-            ) : (
-              <span className={styles.runningBadge}>{t('home.running', 'läuft')}</span>
-            )}
-          </div>
-        ))}
+          )
+        })}
       </div>
 
     </div>

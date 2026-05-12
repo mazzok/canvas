@@ -11,7 +11,11 @@
     "join": "Beitreten",
     "activeSessions": "Aktive Sessions",
     "noSessions": "Keine aktiven Sessions",
-    "running": "läuft"
+    "running": "läuft",
+    "statusWaiting": "Warten auf Spieler",
+    "statusStarting": "Startet...",
+    "statusInProgress": "Runde läuft",
+    "statusEnded": "Runde beendet"
   },
   "nickname": {
     "title": "Wie heißt du?",
