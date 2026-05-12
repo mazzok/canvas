@@ -12,7 +12,8 @@ export function useWebSocket(
 
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    const url = `${protocol}://${window.location.host}/ws/${sessionId}`
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+    const url = `${protocol}://${window.location.host}${base}/ws/${sessionId}`
     const ws = new WebSocket(url)
     wsRef.current = ws
 

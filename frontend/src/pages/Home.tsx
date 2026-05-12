@@ -29,10 +29,12 @@ export default function Home() {
     i18n.changeLanguage(l.toLowerCase())
   }
 
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+
   // Poll active sessions every 5 seconds
   useEffect(() => {
     const fetchSessions = () =>
-      fetch('/api/sessions')
+      fetch(`${base}/api/sessions`)
         .then(r => r.json())
         .then(setSessions)
         .catch(() => {})
@@ -45,7 +47,7 @@ export default function Home() {
     if (!nickname.trim()) return
     setError(null)
     try {
-      const res = await fetch('/api/sessions', {
+      const res = await fetch(`${base}/api/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nickname, displayMode: 'OWN_DEVICE', language: lang }),
