@@ -2,3 +2,31 @@
   max-width: 480px;
   margin: 0 auto;
 }
+
+.newRoundOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  animation: fadeOut 1.5s ease-in forwards;
+}
+
+.newRoundText {
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  0%, 60% { opacity: 1; }
+  100% { opacity: 0; }
+}

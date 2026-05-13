@@ -77,6 +77,7 @@ export default function Home() {
   const joinDirectly = (sessionId: string) => {
     if (!nickname.trim()) return
     localStorage.setItem(`nickname-${sessionId}`, nickname.trim())
+    localStorage.removeItem(`playerId-${sessionId}`)
     navigate(`/session/${sessionId}`)
   }
 

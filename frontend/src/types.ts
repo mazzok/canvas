@@ -1,5 +1,5 @@
 export type GamePhase =
-  | 'LOBBY' | 'CATEGORY' | 'DRAWING' | 'COUNTDOWN' | 'GUESSING' | 'RESULT'
+  | 'LOBBY' | 'CATEGORY' | 'DRAWING' | 'GUESSING' | 'RESULT'
 
 export type DisplayMode = 'OWN_DEVICE' | 'SHARED_SCREEN'
 export type Language = 'DE' | 'EN'
@@ -42,9 +42,11 @@ export interface GameState {
   // Guessing phase
   revealedLetters?: string[]
   secondsLeft?: number
+  guesses: Array<{ nickname: string; text: string }>
   // Result
   lastWord?: string
   lastRoundReason?: 'guessed' | 'timeout'
+  lastWinnerNickname?: string
   // Category voting
   categoryOptions?: string[]
   categoryVotes?: Record<string, string[]>   // category → player IDs
@@ -56,7 +58,7 @@ export type MessageType =
   | 'STROKE' | 'DRAWING_DONE' | 'GUESS'
   | 'GAME_STATE' | 'PLAYER_JOINED' | 'PLAYER_DISCONNECTED'
   | 'CATEGORY_OPTIONS' | 'CATEGORY_VOTES' | 'ROUND_STARTED' | 'WORD_SECRET'
-  | 'COUNTDOWN' | 'HINT' | 'CORRECT_GUESS' | 'ROUND_ENDED' | 'TIMER_TICK' | 'ERROR'
+  | 'GUESS_MADE' | 'HINT' | 'CORRECT_GUESS' | 'ROUND_ENDED' | 'TIMER_TICK' | 'ERROR'
 
 export interface WsMessage {
   type: MessageType

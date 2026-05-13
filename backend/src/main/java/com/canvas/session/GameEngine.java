@@ -27,26 +27,20 @@ public class GameEngine {
     }
 
     /**
-     * End the drawing phase → transition to COUNTDOWN.
+     * End the drawing phase → transition to GUESSING directly.
      */
     public void endDrawingPhase(Session session) {
-        session.phase = GamePhase.COUNTDOWN;
-    }
-
-    /**
-     * Transition from COUNTDOWN to GUESSING.
-     */
-    public void startGuessingPhase(Session session) {
         session.phase = GamePhase.GUESSING;
         session.currentRound.guessingStartedAt = Instant.now();
     }
 
     /**
      * Process a guess. Returns true if correct.
+     * Accepts guesses during DRAWING or GUESSING phases.
      * Awards points and transitions to RESULT on correct guess.
      */
     public boolean processGuess(Session session, String guesserPlayerId, String guess) {
-        if (session.phase != GamePhase.GUESSING) return false;
+        if (session.phase != GamePhase.DRAWING && session.phase != GamePhase.GUESSING) return false;
         if (guesserPlayerId.equals(session.currentRound.drawerId)) return false;
 
         boolean correct = session.currentRound.word.equalsIgnoreCase(guess.trim());

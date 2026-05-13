@@ -1,7 +1,18 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, useMemo } from 'react'
 import type { StrokeEvent, StrokeType } from '../types'
 
 const SIZE_MAP: Record<1 | 2 | 3, number> = { 1: 3, 2: 7, 3: 14 }
+
+function buildCursor(sizePx: number, color: string): string {
+  const r = Math.max(sizePx / 2, 2)
+  const d = Math.ceil(r * 2 + 2)
+  const c = d / 2
+  const isWhite = color === '#ffffff'
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${d}' height='${d}'>`
+    + `<circle cx='${c}' cy='${c}' r='${r}' fill='${isWhite ? 'none' : color}' stroke='${isWhite ? '#999' : '#333'}' stroke-width='1' ${isWhite ? "stroke-dasharray='2'" : ''}/>`
+    + `</svg>`
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}") ${c} ${c}, crosshair`
+}
 
 interface Props {
   strokes: StrokeEvent[]
@@ -13,6 +24,7 @@ interface Props {
 
 export default function Canvas({ strokes, onStroke, readonly, color = '#000000', strokeSize = 1 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const cursor = useMemo(() => readonly ? 'default' : buildCursor(SIZE_MAP[strokeSize], color), [readonly, strokeSize, color])
   const drawing = useRef(false)
 
   useEffect(() => {
@@ -116,7 +128,7 @@ export default function Canvas({ strokes, onStroke, readonly, color = '#000000',
       ref={canvasRef}
       width={800}
       height={600}
-      style={{ width: '100%', height: 'auto', touchAction: 'none', border: '1px solid #ccc', background: '#fff', borderRadius: 8 }}
+      style={{ width: '100%', height: 'auto', touchAction: 'none', border: '1px solid #ccc', background: '#fff', borderRadius: 8, cursor }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}

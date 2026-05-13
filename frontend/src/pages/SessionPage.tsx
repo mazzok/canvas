@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useGameState } from '../hooks/useGameState'
 import Lobby from './Lobby'
@@ -11,9 +12,12 @@ import styles from './SessionPage.module.css'
 
 export default function SessionPage() {
   const { sessionId } = useParams<{ sessionId: string }>()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { state, dispatch } = useGameState(sessionId!)
   const { send } = useWebSocket(sessionId!, dispatch)
+  const [popupText, setPopupText] = useState<string | null>(null)
+  const prevPhase = useRef(state.phase)
 
   useEffect(() => {
     if (state.sessionError) {
@@ -36,20 +40,47 @@ export default function SessionPage() {
     }
   }, [state.playerId, sessionId])
 
+  useEffect(() => {
+    const prev = prevPhase.current
+    prevPhase.current = state.phase
+    let text: string | null = null
+    if (prev === 'RESULT' && state.phase === 'CATEGORY') {
+      text = t('result.nextRound', 'Neue Runde!')
+    } else if (prev === 'CATEGORY' && state.phase === 'DRAWING') {
+      text = state.playerId === state.drawerId
+        ? `${t('drawing.yourTurn', 'Du zeichnest!')} ✏️`
+        : `${state.drawerNickname} ${t('drawing.otherDrawing', 'zeichnet')} 🎨`
+    }
+    if (text) {
+      setPopupText(text)
+      const timer = setTimeout(() => setPopupText(null), 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [state.phase])
+
+  const popup = popupText && (
+    <div className={styles.newRoundOverlay} key={popupText}>
+      <div className={styles.newRoundText}>{popupText}</div>
+    </div>
+  )
+
   if (state.phase === 'LOBBY' || state.phase === 'CATEGORY') {
-    return <div className={styles.container}><Lobby state={state} send={send} /></div>
+    return (
+      <div className={styles.container}>
+        {popup}
+        <Lobby state={state} send={send} />
+      </div>
+    )
   }
   if (state.phase === 'DRAWING') {
     return (
       <div className={styles.container}>
+        {popup}
         {state.playerId === state.drawerId
           ? <Drawing state={state} send={send} />
-          : <Watching state={state} />}
+          : <Watching state={state} send={send} />}
       </div>
     )
-  }
-  if (state.phase === 'COUNTDOWN') {
-    return <div className={styles.container}><Watching state={state} /></div>
   }
   if (state.phase === 'GUESSING') {
     return <div className={styles.container}><Guessing state={state} send={send} /></div>

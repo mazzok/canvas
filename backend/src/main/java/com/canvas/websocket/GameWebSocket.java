@@ -141,7 +141,7 @@ public class GameWebSocket {
     private void handleStartGame(Session ws, com.canvas.model.Session gameSession) {
         String playerId = wsToPlayerId.get(ws);
         if (!isHost(gameSession, playerId)) { sendTo(ws, WsMessage.error("Only host can start")); return; }
-        if (gameSession.phase != GamePhase.LOBBY) { sendTo(ws, WsMessage.error("Game already started")); return; }
+        if (gameSession.phase != GamePhase.LOBBY && gameSession.phase != GamePhase.RESULT) { sendTo(ws, WsMessage.error("Game already started")); return; }
 
         gameSession.phase = GamePhase.CATEGORY;
         gameSession.categoryVotes.clear();
@@ -271,21 +271,30 @@ public class GameWebSocket {
         if (!playerId.equals(gameSession.currentRound.drawerId)) return;
 
         cancelTimer(gameSession.id + "-drawing");
-        transitionToCountdown(gameSession);
+        gameEngine.endDrawingPhase(gameSession);
+        startGuessingTimer(gameSession);
     }
 
     private void handleGuess(Session ws, com.canvas.model.Session gameSession, Map<String, Object> payload) {
-        if (gameSession.phase != GamePhase.GUESSING) return;
+        if (gameSession.phase != GamePhase.DRAWING && gameSession.phase != GamePhase.GUESSING) return;
         String playerId = wsToPlayerId.get(ws);
+        if (playerId.equals(gameSession.currentRound.drawerId)) return;
         String guess = (String) payload.get("text");
+
+        Player guesser = gameSession.players.get(playerId);
+        broadcast(gameSession, WsMessage.of(MessageType.GUESS_MADE, Map.of(
+            "playerId", playerId,
+            "nickname", guesser.nickname,
+            "text", guess
+        )));
 
         boolean correct = gameEngine.processGuess(gameSession, playerId, guess);
         if (correct) {
+            cancelTimer(gameSession.id + "-drawing");
             cancelTimer(gameSession.id + "-guessing");
-            Player winner = gameSession.players.get(playerId);
             broadcast(gameSession, WsMessage.of(MessageType.CORRECT_GUESS, Map.of(
                 "winnerId", playerId,
-                "winnerNickname", winner.nickname,
+                "winnerNickname", guesser.nickname,
                 "word", gameSession.currentRound.word,
                 "scores", buildPlayerList(gameSession)
             )));
@@ -310,30 +319,14 @@ public class GameWebSocket {
                 Map.of("phase", "DRAWING", "secondsLeft", 60 - elapsed[0])));
             if (elapsed[0] >= 60) {
                 cancelTimer(key);
-                transitionToCountdown(gameSession);
+                gameEngine.endDrawingPhase(gameSession);
+                startGuessingTimer(gameSession);
             }
         }, 1, 1, TimeUnit.SECONDS);
         activeTimers.put(key, future);
     }
 
-    private void transitionToCountdown(com.canvas.model.Session gameSession) {
-        gameEngine.endDrawingPhase(gameSession);
-        // 3-2-1 countdown
-        long[] count = {3};
-        ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(() -> {
-            broadcast(gameSession, WsMessage.of(MessageType.COUNTDOWN,
-                Map.of("seconds", count[0])));
-            count[0]--;
-            if (count[0] < 0) {
-                cancelTimer(gameSession.id + "-countdown");
-                startGuessingTimer(gameSession);
-            }
-        }, 0, 1, TimeUnit.SECONDS);
-        activeTimers.put(gameSession.id + "-countdown", future);
-    }
-
     private void startGuessingTimer(com.canvas.model.Session gameSession) {
-        gameEngine.startGuessingPhase(gameSession);
         String key = gameSession.id + "-guessing";
 
         // Send initial hint

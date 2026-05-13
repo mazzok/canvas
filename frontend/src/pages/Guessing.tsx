@@ -4,12 +4,14 @@ import type { GameState, WsMessage } from '../types'
 import Canvas from '../components/Canvas'
 import WordHint from '../components/WordHint'
 import Timer from '../components/Timer'
+import GuessFeed from '../components/GuessFeed'
 
 interface Props { state: GameState; send: (m: WsMessage) => void }
 
 export default function Guessing({ state, send }: Props) {
   const { t } = useTranslation()
   const [guess, setGuess] = useState('')
+  const isDrawer = state.playerId === state.drawerId
 
   function submit() {
     if (!guess.trim()) return
@@ -25,7 +27,10 @@ export default function Guessing({ state, send }: Props) {
   return (
     <div style={{ maxWidth: 600, margin: '0 auto', padding: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span>{t('guessing.guess')}</span>
+        <span>
+          {t('guessing.guess')}
+          {state.category && <span style={{ color: '#888', fontSize: 13, marginLeft: 8 }}>({state.category})</span>}
+        </span>
         <Timer seconds={state.secondsLeft ?? 60} />
       </div>
       <Canvas strokes={state.strokeHistory} onStroke={() => {}} readonly={true} />
@@ -39,10 +44,12 @@ export default function Guessing({ state, send }: Props) {
           onKeyDown={e => e.key === 'Enter' && submit()}
           placeholder={t('guessing.placeholder')}
           autoFocus
-          style={{ flex: 1, padding: 10, fontSize: 16 }}
+          disabled={isDrawer}
+          style={{ flex: 1, padding: 10, fontSize: 16, opacity: isDrawer ? 0.4 : 1 }}
         />
-        <button onClick={submit} style={{ padding: '10px 20px' }}>{t('guessing.send')}</button>
+        <button onClick={submit} disabled={isDrawer} style={{ padding: '10px 20px', opacity: isDrawer ? 0.4 : 1 }}>{t('guessing.send')}</button>
       </div>
+      <GuessFeed guesses={state.guesses} />
     </div>
   )
 }

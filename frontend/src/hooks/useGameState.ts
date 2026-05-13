@@ -10,6 +10,7 @@ const initial: GameState = {
   language: 'DE',
   players: [],
   strokeHistory: [],
+  guesses: [],
 }
 
 function reducer(state: GameState, msg: WsMessage): GameState {
@@ -59,6 +60,7 @@ function reducer(state: GameState, msg: WsMessage): GameState {
         firstLetter: p.firstLetter as string,
         secretWord: undefined,
         strokeHistory: [],
+        guesses: [],
         revealedLetters: undefined,
         categoryVotes: undefined,
         categoryCountdownLeft: undefined,
@@ -71,8 +73,11 @@ function reducer(state: GameState, msg: WsMessage): GameState {
         ...state,
         strokeHistory: [...state.strokeHistory, p as unknown as StrokeEvent],
       }
-    case 'COUNTDOWN':
-      return { ...state, phase: 'COUNTDOWN' }
+    case 'GUESS_MADE':
+      return {
+        ...state,
+        guesses: [...state.guesses, { nickname: p.nickname as string, text: p.text as string }],
+      }
     case 'HINT':
       return { ...state, revealedLetters: p.revealedLetters as string[] }
     case 'TIMER_TICK':
@@ -82,7 +87,7 @@ function reducer(state: GameState, msg: WsMessage): GameState {
         secondsLeft: p.secondsLeft as number,
       }
     case 'CORRECT_GUESS':
-      return { ...state, players: p.scores as Player[] }
+      return { ...state, players: p.scores as Player[], lastWinnerNickname: p.winnerNickname as string }
     case 'ROUND_ENDED':
       return {
         ...state,

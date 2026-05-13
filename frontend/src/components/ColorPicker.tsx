@@ -1,4 +1,5 @@
 const ERASER_COLOR = '#ffffff'
+const SIZE_PREVIEW: Record<1 | 2 | 3, number> = { 1: 6, 2: 12, 3: 22 }
 
 const COLORS = [
   '#000000','#e74c3c','#e67e22','#f1c40f','#2ecc71',
@@ -60,7 +61,18 @@ export default function ColorPicker({ color, size, onColorChange, onSizeChange }
             }}
           />
         ))}
-        <span style={{ fontSize: 12, color: '#888' }}>Größe</span>
+        <div style={{
+          width: 36, height: 36, marginLeft: 8,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          border: '1px solid #ccc', borderRadius: 8, background: '#fff',
+        }}>
+          <div style={{
+            width: SIZE_PREVIEW[size], height: SIZE_PREVIEW[size],
+            borderRadius: '50%',
+            background: isEraser ? '#ccc' : color,
+            border: isEraser ? '1px dashed #999' : 'none',
+          }} />
+        </div>
       </div>
     </div>
   )

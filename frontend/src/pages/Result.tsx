@@ -15,7 +15,7 @@ export default function Result({ state, send }: Props) {
     <div style={{ maxWidth: 480, margin: '0 auto', padding: 24, textAlign: 'center' }}>
       <h2>
         {state.lastRoundReason === 'guessed'
-          ? `🎉 ${t('result.correct')}`
+          ? `🎉 ${state.lastWinnerNickname} ${t('result.correct')}`
           : `⏰ ${t('result.timeout')}`}
       </h2>
       <p>{t('result.theWord')} <strong>{state.lastWord}</strong></p>
