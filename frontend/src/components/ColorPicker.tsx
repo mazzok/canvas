@@ -1,5 +1,7 @@
+const ERASER_COLOR = '#ffffff'
+
 const COLORS = [
-  '#000000','#ffffff','#e74c3c','#e67e22','#f1c40f','#2ecc71',
+  '#000000','#e74c3c','#e67e22','#f1c40f','#2ecc71',
   '#1abc9c','#3498db','#9b59b6','#e91e63','#795548','#607d8b',
   '#ff5722','#8bc34a','#00bcd4','#673ab7','#ff9800','#4caf50',
   '#f44336','#2196f3',
@@ -15,9 +17,11 @@ interface Props {
 }
 
 export default function ColorPicker({ color, size, onColorChange, onSizeChange }: Props) {
+  const isEraser = color === ERASER_COLOR
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
         {COLORS.map(c => (
           <div
             key={c}
@@ -29,6 +33,20 @@ export default function ColorPicker({ color, size, onColorChange, onSizeChange }
             }}
           />
         ))}
+        <div
+          onClick={() => onColorChange(ERASER_COLOR)}
+          title="Eraser"
+          style={{
+            width: 28, height: 28, borderRadius: '50%', cursor: 'pointer',
+            background: '#fff',
+            border: isEraser ? '3px solid #333' : '2px solid #ccc',
+            boxSizing: 'border-box',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16,
+          }}
+        >
+          ⌫
+        </div>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         {SIZES.map(s => (
