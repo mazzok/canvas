@@ -47,19 +47,16 @@ class GameEngineTest {
     }
 
     @Test
-    void endDrawingPhase_setsCountdownPhase() {
+    void endDrawingPhase_setsGuessingPhase() {
         gameEngine.startRound(session, "tiere");
         gameEngine.endDrawingPhase(session);
-        assertEquals(GamePhase.COUNTDOWN, session.phase);
+        assertEquals(GamePhase.GUESSING, session.phase);
     }
 
     @Test
     void processGuess_correct_awardsPoints() {
         gameEngine.startRound(session, "tiere");
         gameEngine.endDrawingPhase(session);
-        // fast-forward to GUESSING phase
-        session.phase = GamePhase.GUESSING;
-        session.currentRound.guessingStartedAt = java.time.Instant.now();
 
         String guesserPlayerId = session.players.values().stream()
             .filter(p -> !p.id.equals(session.currentRound.drawerId))
